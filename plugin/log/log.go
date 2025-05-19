@@ -70,5 +70,5 @@ const (
 	// CombinedLogFormat is the combined log format.
 	CombinedLogFormat = CommonLogFormat + ` "{>opcode}"`
 	// DefaultLogFormat is the default log format.
-	DefaultLogFormat = CommonLogFormat
+	DefaultLogFormat = CommonLogFormat + ` "{upstream}"`
 )

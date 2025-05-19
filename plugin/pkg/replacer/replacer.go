@@ -31,7 +31,8 @@ func (r Replacer) Replace(ctx context.Context, state request.Request, rr *dnstes
 const (
 	headerReplacer = "{>"
 	// EmptyValue is the default empty value.
-	EmptyValue = "-"
+	EmptyValue   = "-"
+	NotAvailable = "NA"
 )
 
 // labels are all supported labels that can be used in the default Replacer.
@@ -54,12 +55,19 @@ var labels = map[string]struct{}{
 	"{rsize}":                  {},
 	"{duration}":               {},
 	headerReplacer + "rflags}": {},
+	// Upstream IP placeholder
+	"{upstream}": {},
 }
 
 // appendValue appends the current value of label.
-func appendValue(b []byte, state request.Request, rr *dnstest.Recorder, label string) []byte {
+func appendValue(b []byte, ctx context.Context, state request.Request, rr *dnstest.Recorder, label string) []byte {
 	switch label {
 	// Recorded replacements.
+	case "{upstream}":
+		if val := metadata.ValueFunc(ctx, "forward/upstream"); val != nil {
+			return append(b, val()...)
+		}
+		return append(b, EmptyValue...)
 	case "{rcode}":
 		if rr == nil || rr.Msg == nil {
 			return append(b, EmptyValue...)
@@ -266,7 +274,7 @@ func (r replacer) Replace(ctx context.Context, state request.Request, rr *dnstes
 	for _, s := range r {
 		switch s.typ {
 		case typeLabel:
-			b = appendValue(b, state, rr, s.value)
+			b = appendValue(b, ctx, state, rr, s.value)
 		case typeLiteral:
 			b = append(b, s.value...)
 		case typeMetadata:

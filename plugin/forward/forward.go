@@ -150,6 +150,7 @@ func (f *Forward) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 			ctx = ot.ContextWithSpan(ctx, child)
 		}
 
+		// Update the upstream metadata with the selected proxy
 		metadata.SetValueFunc(ctx, "forward/upstream", func() string {
 			return proxy.Addr()
 		})

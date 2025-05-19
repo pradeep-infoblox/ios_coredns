@@ -13,6 +13,7 @@ import (
 	"github.com/coredns/coredns/core/dnsserver"
 	"github.com/coredns/coredns/plugin"
 	"github.com/coredns/coredns/plugin/dnstap"
+	"github.com/coredns/coredns/plugin/metadata"
 	"github.com/coredns/coredns/plugin/pkg/parse"
 	"github.com/coredns/coredns/plugin/pkg/proxy"
 	pkgtls "github.com/coredns/coredns/plugin/pkg/tls"
@@ -35,6 +36,18 @@ func setup(c *caddy.Controller) error {
 		if f.Len() > max {
 			return plugin.Error("forward", fmt.Errorf("more than %d TOs configured: %d", max, f.Len()))
 		}
+
+		// Register this plugin as a provider of metadata
+		// This is crucial for our {upstream} placeholder to work
+		c.OnStartup(func() error {
+			plugins := dnsserver.GetConfig(c).Handlers()
+			for _, p := range plugins {
+				if met, ok := p.(*metadata.Metadata); ok {
+					met.Providers = append(met.Providers, f)
+				}
+			}
+			return nil
+		})
 
 		if i == len(fs)-1 {
 			// last forward: point next to next plugin

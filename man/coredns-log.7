@@ -124,6 +124,8 @@ bit as well
 .IP \(bu 4
 \fB\fC{>opcode}\fR: query OPCODE
 .IP \(bu 4
+\fB\fC{upstream}\fR: the upstream IP address that was used to resolve the query (only available if the query was resolved by a forwarding plugin)
+.IP \(bu 4
 \fB\fC{common}\fR: the default Common Log Format.
 .IP \(bu 4
 \fB\fC{combined}\fR: the Common Log Format with the query opcode.
@@ -141,6 +143,18 @@ The default Common Log Format is:
 
 .nf
 `{remote}:{port} \- {>id} "{type} {class} {name} {proto} {size} {>do} {>bufsize}" {rcode} {>rflags} {rsize} {duration}`
+
+.fi
+.RE
+
+.PP
+The default Log Format used by CoreDNS includes the upstream IP address:
+
+.PP
+.RS
+
+.nf
+`{remote}:{port} \- {>id} "{type} {class} {name} {proto} {size} {>do} {>bufsize}" {rcode} {>rflags} {rsize} {duration} "{upstream}"`
 
 .fi
 .RE

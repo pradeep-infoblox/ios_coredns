@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"sync/atomic"
 	"time"
 
@@ -182,6 +183,10 @@ func (f *Forward) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 		if len(f.tapPlugins) != 0 {
 			toDnstap(ctx, f, proxy.Addr(), state, opts, ret, start)
 		}
+
+		// Track the actual proxy used for this specific request for metadata
+		requestID := fmt.Sprintf("%s-%d", state.QName(), state.Req.Id)
+		SetLastUsedProxy(requestID, proxy.Addr())
 
 		upstreamErr = err
 
